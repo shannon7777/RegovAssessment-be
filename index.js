@@ -6,7 +6,7 @@ const credentials = require("./middleware/credentials");
 const errorHandler = require("./middleware/errorHandler");
 const app = express();
 
-// connect DB
+// connect DBs
 connectDb();
 
 const PORT = process.env.PORT || 7000;
