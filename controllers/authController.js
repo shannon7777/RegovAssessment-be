@@ -82,7 +82,7 @@ const pwdResetLink = async (req, res) => {
       .catch((error) => {
         res.status(500).json({
           message: `Could not send link to email, please try again later`,
-          error
+          error,
         });
       });
   } catch (error) {
@@ -92,4 +92,22 @@ const pwdResetLink = async (req, res) => {
   }
 };
 
-module.exports = { handleLogin, handleLogout, pwdResetLink };
+const verifyPasswordReset = (req, res) => {
+  console.log(`verifying pwd token`);
+  const { token } = req.body;
+  const secretKey = process.env.ACCESS_TOKEN_SECRET;
+  jwt.verify(token, secretKey, async (error, decoded) => {
+    if (error)
+      return res.status(403).json({ message: `Invalid password reset token` });
+
+    const userExists = await User.find({ email: decoded.email }).lean().exec();
+    if (userExists) res.status(200).json({ email: decoded.email });
+  });
+};
+
+module.exports = {
+  handleLogin,
+  handleLogout,
+  verifyPasswordReset,
+  pwdResetLink,
+};

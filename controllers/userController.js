@@ -47,8 +47,20 @@ const createUser = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
-  console.log(`RESET PASSWORD ROUTE HIT!`);
   try {
+    const email = req.params.email;
+    const { password } = req.body;
+    const user = await User.find({ email }).lean().exec();
+    const hashedPwd = await bcrypt.hash(password, 10);
+    console.log(hashedPwd);
+
+    await User.updateOne(user._id, {
+      password: hashedPwd,
+    }).exec();
+
+    res.status(200).json({
+      message: `Your password has been reset, please log in using your new credentials`,
+    });
   } catch (error) {
     res.status(400).json({ message: `Could not reset password` });
   }

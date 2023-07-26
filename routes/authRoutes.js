@@ -4,6 +4,7 @@ const {
   handleLogin,
   handleLogout,
   pwdResetLink,
+  verifyPasswordReset,
 } = require("../controllers/authController");
 
 // User log in
@@ -12,7 +13,10 @@ router.post("/", handleLogin);
 // User Logout
 router.get("/logout", handleLogout);
 
-// Handle password reset
+// Handle send password reset link
 router.post("/reset", pwdResetLink);
+
+// Verify password reset token
+router.post("/verify-pwd-reset", verifyPasswordReset);
 
 module.exports = router;
