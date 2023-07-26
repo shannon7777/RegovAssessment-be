@@ -46,4 +46,12 @@ const createUser = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, createUser };
+const resetPassword = async (req, res) => {
+  console.log(`RESET PASSWORD ROUTE HIT!`);
+  try {
+  } catch (error) {
+    res.status(400).json({ message: `Could not reset password` });
+  }
+};
+
+module.exports = { getUsers, createUser, resetPassword };

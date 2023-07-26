@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const sgMail = require("@sendgrid/mail");
 
 const handleLogin = async (req, res) => {
   console.log(`auth route`);
@@ -46,4 +47,49 @@ const handleLogout = async (req, res) => {
   res.status(200).json({ message: `You have logged out` });
 };
 
-module.exports = { handleLogin, handleLogout };
+const pwdResetLink = async (req, res) => {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  try {
+    const { email } = req.body;
+    // check if user exists
+    const user = await User.find({ email }).lean().exec();
+    if (!user)
+      return res.status(404).json({
+        message: `${email} does not exist, please enter a valid email`,
+      });
+
+    const token = jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: "1h",
+    });
+    const link = `${req.protocol}://localhost:3000/password-reset?token=${token}`;
+    const from = `shannonsimoncherry@hotmail.com`;
+    const subject = `Password Recovery`;
+    const content = `<div>Click this link to reset your password: ${link}</div>`;
+    const payload = {
+      to: email,
+      from,
+      subject,
+      html: content,
+    };
+
+    await sgMail
+      .send(payload)
+      .then(() => {
+        return res.status(200).json({
+          message: `A link has been sent to your email, please check your inbox`,
+        });
+      })
+      .catch((error) => {
+        res.status(500).json({
+          message: `Could not send link to email, please try again later`,
+          error
+        });
+      });
+  } catch (error) {
+    res.status(400).json({
+      message: `Could not send link to email, please try again later`,
+    });
+  }
+};
+
+module.exports = { handleLogin, handleLogout, pwdResetLink };
